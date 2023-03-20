@@ -212,7 +212,7 @@ def moveValidation():
     while True:
         while True:
             print()
-            moveTo = input("Enter a move: ").lower()
+            moveTo = input("Enter A Move, E.G A1: ").lower()
             if len(moveTo) != 2:
                 print("Please enter a valid move.")
             elif re.match("\S\d", moveTo) == None:
