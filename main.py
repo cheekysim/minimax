@@ -1,6 +1,7 @@
 import re
 import math
 import os
+import subprocess
 from graphviz import Digraph
 
 from graph import Node, plotTree
@@ -37,7 +38,7 @@ def moveValidation() -> tuple:
         else:
             return row, col
 
-def main():
+def main(graphvis: bool = False):
     """Main Game"""
     game = Game('X')
 
@@ -74,30 +75,40 @@ def main():
             else:
                 break # Continues with the program
         
+        # Check if graphvis is installed
         # Calculate when to start creating game trees,
         # Otherwise they are massive and break the computer
         # Anything above 7! takes ages
-        fact = math.factorial(len(game.generateTree(game.game, "max")))
-        if fact <= 720:
-            root = Node(game.game) # This is used as the root node for the decision tree
-            game.tree = root # This makes the tree not Null so the code will add to it
-        game.moveAI() # Moves the ai and generates the tree
-        if fact <= 720:
-            # Creates and formats the graph
-            graph = Digraph()
-            graph.attr(
-                'graph',
-                rankdir='TB',
-                label=f'Decision Tree For {fact} Moves',
-                labelloc='t',
-                labeljust='c',
-                labelfontsize='80'
-                )
-            # Function in graph.py
-            plotTree(root, graph)   
-            # Saves the graph
-            graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
+        if graphvis:
+            fact = math.factorial(len(game.generateTree(game.game, "max")))
+            if fact <= 720:
+                root = Node(game.game) # This is used as the root node for the decision tree
+                game.tree = root # This makes the tree not Null so the code will add to it
+            game.moveAI() # Moves the ai and generates the tree
+            if fact <= 720:
+                # Creates and formats the graph
+                graph = Digraph()
+                graph.attr(
+                    'graph',
+                    rankdir='TB',
+                    label=f'Decision Tree For {fact} Moves',
+                    labelloc='t',
+                    labeljust='c',
+                    labelfontsize='80'
+                    )
+                # Function in graph.py
+                plotTree(root, graph)   
+                # Saves the graph
+                graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
+        else:
+            game.moveAI()
 
 # This means the file should be run
 if __name__ == '__main__':
-    main()
+    try:
+        subprocess.check_output(['dot', '-V'], stderr=subprocess.STDOUT)
+        main(True)
+    except subprocess.CalledProcessError:
+        print("Graphviz is not installed")
+        print("Please install graphviz from https://graphviz.org/download/")
+        main(False)
