@@ -199,9 +199,9 @@ cols = {
 
 def plotTree(node, graph):
     if node.isLeaf():
-        graph.node(str(id(node)), label=str(node.formatted), shape='oval', style='filled', fillcolor=node.color)
+        graph.node(str(id(node)), label=str(node.formatted), shape='circle', style='filled', fillcolor=node.color)
     else:
-        graph.node(str(id(node)), label=str(node.formatted), shape='square', style='filled', fillcolor=node.color)
+        graph.node(str(id(node)), label=str(node.formatted), shape='box', style='filled', fillcolor=node.color)
         for child in node.children:
             plotTree(child, graph)
             graph.edge(str(id(node)), str(id(child)), label=str(child.action))
@@ -224,43 +224,48 @@ def moveCheck():
         else:
             return row, col
 
-game = Game('X')
+def main():
 
-try:
-    files = os.listdir('tree')
-    for file in files:
-        os.remove('tree/' + file)
-except FileNotFoundError:
-    os.mkdir('tree')
+    game = Game('X')
 
-while True:
-    print()
-    game.display()
-    if game.gameOver(game.game):
-        winner = game.evaluate(game.game)
-        if winner == 1:
-            print("You Lost!")
-        elif winner == -1:
-            print("You Won!")
-        else:
-            print("Its A Draw!")
-        break
-        
+    try:
+        files = os.listdir('tree')
+        for file in files:
+            os.remove('tree/' + file)
+    except FileNotFoundError:
+        os.mkdir('tree')
+
     while True:
-        row, col = moveCheck()
-        move = game.move(-1, row, col)
-        if move == False:
-            print("That space is already taken.")
-        else:
+        print()
+        game.display()
+        if game.gameOver(game.game):
+            winner = game.evaluate(game.game)
+            if winner == 1:
+                print("You Lost!")
+            elif winner == -1:
+                print("You Won!")
+            else:
+                print("Its A Draw!")
             break
+            
+        while True:
+            row, col = moveCheck()
+            move = game.move(-1, row, col)
+            if move == False:
+                print("That space is already taken.")
+            else:
+                break
 
-    fact = math.factorial(len(game.generateTree(game.game, "max")))
-    if fact <= 720:
-        root = Node(game.game)
-        game.tree = root
-    game.moveAI()
-    if fact <= 720:
-        graph = Digraph()
-        graph.attr('graph', rankdir='TB', label=f'Decision Tree For {fact} Moves', labelloc='t', labeljust='c', labelfontsize='80')
-        plotTree(root, graph)   
-        graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
+        fact = math.factorial(len(game.generateTree(game.game, "max")))
+        if fact <= 720:
+            root = Node(game.game)
+            game.tree = root
+        game.moveAI()
+        if fact <= 720:
+            graph = Digraph()
+            graph.attr('graph', rankdir='TB', label=f'Decision Tree For {fact} Moves', labelloc='t', labeljust='c', labelfontsize='80')
+            plotTree(root, graph)   
+            graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
+
+if __name__ == '__main__':
+    main()
