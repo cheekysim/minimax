@@ -1,11 +1,53 @@
 import copy
 import re
+import math
+import os
+from graphviz import Digraph
 
+class Node():
+    # Super game
+
+
+    def __init__(self, state):
+        self.state = state
+        self.formatted = self.format()
+        self.children = []
+        self.action = None
+        self.color = "#FFFFFF"
+        __tempGame = Game('O')
+        if __tempGame.getWinner(state) == 1:
+            self.color = "#00AA00"
+        elif __tempGame.getWinner(state) == -1:
+            self.color = "#AA0000"
+        elif __tempGame.getDraw(state):
+            self.color = "#AAAAAA"
+        else:
+            self.color = "#EEEEEE"
+    
+    def isLeaf(self):
+        return len(self.children) == 0
+    
+    def format(self):
+        result = ""
+        for row in self.state:
+            for cell in row:
+                if cell == 0:
+                    result += "-"
+                elif cell == 1:
+                    result += "O"
+                elif cell == -1:
+                    result += "X"
+            result += "\n"
+        return result
+
+    
+    
 class Game():
     def __init__(self, player: str) -> None:
         self.game = [[0, 0, 0],
                      [0, 0, 0],
                      [0, 0, 0],]
+        self.tree = None
 
         self.player = player.upper()
         if player.lower() == 'x':
@@ -94,7 +136,7 @@ class Game():
         elif self.getWinner(game) == -1:
             return -1
 
-    def minimax(self, state, depth, player):
+    def minimax(self, state, depth, player, tree=None):
         # Minimax algorithm
         if player == "max":
             nplayer = 1
@@ -110,10 +152,19 @@ class Game():
         for cell in self.generateTree(state, player).items():
             x, y = cell[0]
             state[x][y] = nplayer
-            if player == "max":
-                score = self.minimax(state, depth - 1, "min")
+            if tree:
+                node = Node(state)
+                node.action = cell[0]
+                if player == "max":
+                    score = self.minimax(state, depth - 1, "min", node)
+                else:
+                    score = self.minimax(state, depth - 1, "max", node)
+                tree.children.append(node)
             else:
-                score = self.minimax(state, depth - 1, "max")
+                if player == "max":
+                    score = self.minimax(state, depth - 1, "min")
+                else:
+                    score = self.minimax(state, depth - 1, "max")
             state[x][y] = 0
             score[0], score[1] = x, y
 
@@ -128,7 +179,10 @@ class Game():
 
     def bestMove(self):
         depth = len(self.generateTree(self.game, "max"))
-        best = self.minimax(self.game, depth, "max")
+        if self.tree == None:
+            best = self.minimax(self.game, depth, "max")
+        else:
+            best = self.minimax(self.game, depth, "max", self.tree)
         return best[0], best[1]
 
     def moveAI(self):
@@ -142,6 +196,15 @@ cols = {
     "b": 1,
     "c": 2
 }
+
+def plotTree(node, graph):
+    if node.isLeaf():
+        graph.node(str(id(node)), label=str(node.formatted), shape='oval', style='filled', fillcolor=node.color)
+    else:
+        graph.node(str(id(node)), label=str(node.formatted), shape='square', style='filled', fillcolor=node.color)
+        for child in node.children:
+            plotTree(child, graph)
+            graph.edge(str(id(node)), str(id(child)), label=str(child.action))
 
 def moveCheck():
     while True:
@@ -161,14 +224,14 @@ def moveCheck():
         else:
             return row, col
 
-while True:
-    cursor = input("Would you like to be X or O | ").lower()
-    if cursor == 'x' or cursor == 'o':
-        break
-    else:
-        print("Please Enter X or O")
+game = Game('X')
 
-game = Game(cursor.lower())
+try:
+    files = os.listdir('tree')
+    for file in files:
+        os.remove('tree/' + file)
+except FileNotFoundError:
+    os.mkdir('tree')
 
 while True:
     print()
@@ -190,4 +253,14 @@ while True:
             print("That space is already taken.")
         else:
             break
+
+    fact = math.factorial(len(game.generateTree(game.game, "max")))
+    if fact <= 720:
+        root = Node(game.game)
+        game.tree = root
     game.moveAI()
+    if fact <= 720:
+        graph = Digraph()
+        graph.attr('graph', rankdir='TB', label=f'Decision Tree For {fact} Moves', labelloc='t', labeljust='c', labelfontsize='80')
+        plotTree(root, graph)   
+        graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
