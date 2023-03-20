@@ -1,214 +1,25 @@
-import copy
 import re
 import math
 import os
 from graphviz import Digraph
 
-class Node():
-    # Super game
+from graph import Node, plotTree
+from game import Game
 
-
-    def __init__(self, state):
-        self.state = state
-        self.formatted = self.format()
-        self.children = []
-        self.action = None
-        self.value = 0
-        self.color = "#FFFFFF"
-        __tempGame = Game('O')
-        if __tempGame.getWinner(state) == 1:
-            self.color = "#00AA00"
-        elif __tempGame.getWinner(state) == -1:
-            self.color = "#AA0000"
-        elif __tempGame.getDraw(state):
-            self.color = "#AAAAAA"
-        else:
-            self.color = "#EEEEEE"
-    
-    def isLeaf(self):
-        return len(self.children) == 0
-    
-    def format(self):
-        result = ""
-        for row in self.state:
-            for cell in row:
-                if cell == 0:
-                    result += "-"
-                elif cell == 1:
-                    result += "O"
-                elif cell == -1:
-                    result += "X"
-            result += "\n"
-        return result
-
-    
-    
-class Game():
-    def __init__(self, player: str) -> None:
-        self.game = [[0, 0, 0],
-                     [0, 0, 0],
-                     [0, 0, 0],]
-        self.tree = None
-
-        self.player = player.upper()
-        if player.lower() == 'x':
-            self.ai = 'O'
-        else:
-            self.ai = 'X'
-
-    def display(self):
-        # Column Selector
-        print("  a   b   c")
-
-        formatted = [str(col).replace('-1', self.player).replace('1', self.ai).replace('0', '-') for col in [row for row in self.game]]
-        # Row Selector
-        for count, row in enumerate(formatted):
-            print(count + 1, end=" ")
-            print(row.replace('[', '').replace(']', '').replace(', ', ' | '))
-
-    def generateTree(self, game, player="max"):
-        # Generate a tree of all possible moves
-        # The tree is a dictionary of all possible moves
-        # The key is the move, the value is the game state
-        # after that move has been made
-        if player == "max":
-            player = 1
-        else:
-            player = -1
-        tree = {}
-        for x, row in enumerate(game):
-            for y, cell in enumerate(row):
-                if cell == 0:
-                    new_game = copy.deepcopy(game)
-                    new_game[x][y] = player
-                    tree[(x, y)] = new_game
-        return tree
-
-    def getWinner(self, game):
-        # Check row
-        rows = [sum(row) for row in game]
-        if 3 in rows:
-            return 1
-        elif -3 in rows:
-            return -1
-
-        cols = [sum(col) for col in zip(*game)]
-        if 3 in cols:
-            return 1
-        elif -3 in cols:
-            return -1
-
-        diags = [game[0][0] + game[1][1] + game[2]
-                 [2], game[0][2] + game[1][1] + game[2][0]]
-        if 3 in diags:
-            return 1
-        elif -3 in diags:
-            return -1
-
-    def getDraw(self, game):
-        for row in game:
-            for cell in row:
-                if cell == 0:
-                    return False
-        return True
-
-    def move(self, player=-1, row=0, col=0):
-        # Make a move on the board
-        if self.game[row][col] == 0:
-            self.game[row][col] = player
-            return self.game
-        else:
-            return False
-
-    def gameOver(self, game):
-        # Check if the game is over
-        if self.getWinner(game) != None:
-            return True
-        elif self.getDraw(game):
-            return True
-        else:
-            return False
-
-    def evaluate(self, game):
-        if self.getWinner(game) == None:
-            return 0
-        elif self.getWinner(game) == 1:
-            return 1
-        elif self.getWinner(game) == -1:
-            return -1
-
-    def minimax(self, state, depth, player, tree=None):
-        # Minimax algorithm
-        if player == "max":
-            nplayer = 1
-            best = [-1, -1, float("-inf")]
-        else:
-            nplayer = -1
-            best = [-1, -1, float("inf")]
-
-        if depth == 0 or self.gameOver(state):
-            score = self.evaluate(state)
-            return [-1, -1, score]
-
-        for cell in self.generateTree(state, player).items():
-            x, y = cell[0]
-            state[x][y] = nplayer
-            if tree:
-                node = Node(state)
-                node.action = cell[0]
-                if player == "max":
-                    score = self.minimax(state, depth - 1, "min", node)
-                else:
-                    score = self.minimax(state, depth - 1, "max", node)
-                node.value = score[2]
-                tree.children.append(node)
-            else:
-                if player == "max":
-                    score = self.minimax(state, depth - 1, "min")
-                else:
-                    score = self.minimax(state, depth - 1, "max")
-            state[x][y] = 0
-            score[0], score[1] = x, y
-
-            if player == "max":
-                if score[2] > best[2]:
-                    best = score
-            else:
-                if score[2] < best[2]:
-                    best = score
-
-        return best
-
-    def bestMove(self):
-        depth = len(self.generateTree(self.game, "max"))
-        if self.tree == None:
-            best = self.minimax(self.game, depth, "max")
-        else:
-            best = self.minimax(self.game, depth, "max", self.tree)
-        return best[0], best[1]
-
-    def moveAI(self):
-        # Make a move based on the best move
-        x, y = self.bestMove()
-        self.move(1, x, y)
-
-
+# Used to convert a, b, c to 0, 1, 2
 cols = {
     "a": 0,
     "b": 1,
     "c": 2
 }
 
-def plotTree(node, graph):
-    if node.isLeaf():
-        graph.node(str(id(node)), label=str(node.formatted), shape='circle', style='filled', fillcolor=node.color)
-    else:
-        graph.node(str(id(node)), label=str(node.formatted), shape='box', style='filled', fillcolor=node.color)
-        for child in node.children:
-            plotTree(child, graph)
-            graph.edge(str(id(node)), str(id(child)), label=f'({child.action[0] + 1}, {child.action[1] + 1}) {child.value}')
+def moveValidation() -> tuple:
+    """Prompts the user to input a location
+    Ensures the the user enters a valid input
 
-def moveValidation():
+    :return: Row and Col to move to
+    :rtype: tuple
+    """
     while True:
         while True:
             print()
@@ -227,9 +38,10 @@ def moveValidation():
             return row, col
 
 def main():
-
+    """Main Game"""
     game = Game('X')
 
+    # Reset tree directory
     try:
         files = os.listdir('tree')
         for file in files:
@@ -237,9 +49,11 @@ def main():
     except FileNotFoundError:
         os.mkdir('tree')
 
+    # Game Loop
     while True:
         print()
         game.display()
+        # If the game is over stop the game
         if game.gameOver(game.game):
             winner = game.evaluate(game.game)
             if winner == 1:
@@ -249,25 +63,41 @@ def main():
             else:
                 print("Its A Draw!")
             break
-            
+        
+        # Make sure player enters correct values
         while True:
             row, col = moveValidation()
+            # Check if the move is available
             move = game.move(-1, row, col)
             if move == False:
                 print("That space is already taken.")
             else:
-                break
-
+                break # Continues with the program
+        
+        # Calculate when to start creating game trees,
+        # Otherwise they are massive and break the computer
+        # Anything above 7! takes ages
         fact = math.factorial(len(game.generateTree(game.game, "max")))
         if fact <= 720:
-            root = Node(game.game)
-            game.tree = root
-        game.moveAI()
+            root = Node(game.game) # This is used as the root node for the decision tree
+            game.tree = root # This makes the tree not Null so the code will add to it
+        game.moveAI() # Moves the ai and generates the tree
         if fact <= 720:
+            # Creates and formats the graph
             graph = Digraph()
-            graph.attr('graph', rankdir='TB', label=f'Decision Tree For {fact} Moves', labelloc='t', labeljust='c', labelfontsize='80')
+            graph.attr(
+                'graph',
+                rankdir='TB',
+                label=f'Decision Tree For {fact} Moves',
+                labelloc='t',
+                labeljust='c',
+                labelfontsize='80'
+                )
+            # Function in graph.py
             plotTree(root, graph)   
+            # Saves the graph
             graph.render(str(fact) + '.gv', directory='tree', view=False, format='pdf')
 
+# This means the file should be run
 if __name__ == '__main__':
     main()
