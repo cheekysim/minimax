@@ -13,6 +13,7 @@ class Node():
         self.formatted = self.format()
         self.children = []
         self.action = None
+        self.value = 0
         self.color = "#FFFFFF"
         __tempGame = Game('O')
         if __tempGame.getWinner(state) == 1:
@@ -159,6 +160,7 @@ class Game():
                     score = self.minimax(state, depth - 1, "min", node)
                 else:
                     score = self.minimax(state, depth - 1, "max", node)
+                node.value = score[2]
                 tree.children.append(node)
             else:
                 if player == "max":
@@ -204,9 +206,9 @@ def plotTree(node, graph):
         graph.node(str(id(node)), label=str(node.formatted), shape='box', style='filled', fillcolor=node.color)
         for child in node.children:
             plotTree(child, graph)
-            graph.edge(str(id(node)), str(id(child)), label=str(child.action))
+            graph.edge(str(id(node)), str(id(child)), label=f'({child.action[0] + 1}, {child.action[1] + 1}) {child.value}')
 
-def moveCheck():
+def moveValidation():
     while True:
         while True:
             print()
@@ -249,7 +251,7 @@ def main():
             break
             
         while True:
-            row, col = moveCheck()
+            row, col = moveValidation()
             move = game.move(-1, row, col)
             if move == False:
                 print("That space is already taken.")
