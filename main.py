@@ -17,8 +17,7 @@ class Game():
         # Column Selector
         print("  a   b   c")
 
-        formatted = [str(col).replace('-1', self.player).replace('1',
-                                                                 self.ai).replace('0', '-') for col in [row for row in self.game]]
+        formatted = [str(col).replace('-1', self.player).replace('1', self.ai).replace('0', '-') for col in [row for row in self.game]]
         # Row Selector
         for count, row in enumerate(formatted):
             print(count + 1, end=" ")
