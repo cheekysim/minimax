@@ -13,6 +13,7 @@ class Node():
         self.children = []
         self.action = None
         self.value = 0
+        self.player = "max"
         self.color = "#FFFFFF"
         if self.getWinner(state) == 1:
             self.color = "#00AA00"
@@ -111,4 +112,4 @@ def plotTree(node: Node, graph: Digraph) -> None:
         graph.node(str(id(node)), label=str(node.formatted), shape='box', style='filled', fillcolor=node.color)
         for child in node.children:
             plotTree(child, graph)
-            graph.edge(str(id(node)), str(id(child)), label=f'({child.action[0] + 1}, {child.action[1] + 1}) {child.value}')
+            graph.edge(str(id(node)), str(id(child)), label=f'({child.action[0] + 1}, {child.action[1] + 1}) | {child.value} | {child.player}')

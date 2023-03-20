@@ -56,7 +56,7 @@ def main(graphvis: bool = False):
         game.display()
         # If the game is over stop the game
         if game.gameOver(game.game):
-            winner = game.evaluate(game.game)
+            winner = game.evaluate(game.game, 1)
             if winner == 1:
                 print("You Lost!")
             elif winner == -1:

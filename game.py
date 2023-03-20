@@ -1,5 +1,6 @@
 from graph import Node
 import copy
+import random
 
 class Game():
     """The Game Class
@@ -141,7 +142,7 @@ class Game():
         else:
             return False
 
-    def evaluate(self, game) -> int:
+    def evaluate(self, game, depth) -> int:
         """Evaluates the current state of the game
 
         :param game: The current state of the game
@@ -152,9 +153,9 @@ class Game():
         if self.getWinner(game) == None:
             return 0
         elif self.getWinner(game) == 1:
-            return 1
+            return 10 - depth
         elif self.getWinner(game) == -1:
-            return -1
+            return -10 + depth
 
     def minimax(self, state, depth: int, player: str, tree: dict | None = None) -> list[int, int, int]:
         """Minimax algorithm
@@ -181,7 +182,7 @@ class Game():
             best = [-1, -1, float("inf")]
 
         if depth == 0 or self.gameOver(state):
-            score = self.evaluate(state)
+            score = self.evaluate(state, depth)
             return [-1, -1, score]
 
         for cell in self.generateTree(state, player).items():
@@ -190,6 +191,7 @@ class Game():
             if tree:
                 node = Node(state)
                 node.action = cell[0]
+                node.player = player
                 if player == "max":
                     score = self.minimax(state, depth - 1, "min", node)
                 else:
@@ -203,15 +205,24 @@ class Game():
                     score = self.minimax(state, depth - 1, "max")
             state[x][y] = 0
             score[0], score[1] = x, y
-
+            equal = []
             if player == "max":
                 if score[2] > best[2]:
                     best = score
+                    equal.append(score)
+                if score[2] == best[2]:
+                    equal.append(score)
             else:
                 if score[2] < best[2]:
                     best = score
-
-        return best
+                    equal.append(score)
+                if score[2] == best[2]:
+                    equal.append(score)
+        if len(equal) > 1:
+            if depth == 8: print(equal)
+            return random.choice(equal)
+        else:
+            return best
 
     def bestMove(self) -> tuple[int, int]:
         """Gets the best move
@@ -224,6 +235,7 @@ class Game():
             best = self.minimax(self.game, depth, "max")
         else:
             best = self.minimax(self.game, depth, "max", self.tree)
+
         return best[0], best[1]
 
     def moveAI(self):
