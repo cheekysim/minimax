@@ -2,6 +2,11 @@ from graph import Node
 import copy
 
 class Game():
+    """The Game Class
+
+    :param player: The player, either X or O
+    :type player: str
+    """
     def __init__(self, player: str) -> None:
         self.game = [[0, 0, 0],
                      [0, 0, 0],
@@ -15,8 +20,7 @@ class Game():
             self.ai = 'X'
 
     def display(self):
-        """Displays the game in a user friendly way
-        """
+        """Displays the game in a user friendly way"""
         # Column Selector
         print("  a   b   c")
 
@@ -66,7 +70,7 @@ class Game():
         :param game: The current state of the game
         :type game: Game
         :return: Either 1, -1 or None, Depending on who won
-        :rtype: int or None
+        :rtype: int | None
         """
         # Check row
         rows = [sum(row) for row in game]
@@ -103,7 +107,17 @@ class Game():
         return True
 
     def move(self, player=-1, row=0, col=0):
-        
+        """Moves the player to the specified row and column
+
+        :param player: The player to move, defaults to -1
+        :type player: int, optional
+        :param row: The row to move to, defaults to 0
+        :type row: int, optional
+        :param col: The column to move to, defaults to 0
+        :type col: int, optional
+        :return: Returns the new game state if the move was valid, False if it wasnt
+        :rtype: False | Game
+        """
         # Make a move on the board
         if self.game[row][col] == 0:
             self.game[row][col] = player
@@ -111,7 +125,14 @@ class Game():
         else:
             return False
 
-    def gameOver(self, game):
+    def gameOver(self, game) -> bool:
+        """Checks if the game has been won or drawn
+
+        :param game: The current state of the game
+        :type game: Game
+        :return: True if the game is over, False if it isnt
+        :rtype: bool
+        """
         # Check if the game is over
         if self.getWinner(game) != None:
             return True
@@ -120,7 +141,14 @@ class Game():
         else:
             return False
 
-    def evaluate(self, game):
+    def evaluate(self, game) -> int:
+        """Evaluates the current state of the game
+
+        :param game: The current state of the game
+        :type game: Game
+        :return: Whoever has won, 1 for player, -1 for AI, 0 for draw
+        :rtype: int
+        """
         if self.getWinner(game) == None:
             return 0
         elif self.getWinner(game) == 1:
@@ -128,7 +156,22 @@ class Game():
         elif self.getWinner(game) == -1:
             return -1
 
-    def minimax(self, state, depth, player, tree=None):
+    def minimax(self, state, depth: int, player: str, tree: dict | None = None) -> list[int, int, int]:
+        """Minimax algorithm
+        Detailed explanation of the algorithm can be found here:
+        https://github.com/Cledersonbc/tic-tac-toe-minimax
+
+        :param state: Current state of the game
+        :type state: Game
+        :param depth: Depth of the tree to search
+        :type depth: int
+        :param player: Wether to use min or max
+        :type player: str
+        :param tree: Wether to create a tree or not, defaults to None
+        :type tree: dict | None, optional
+        :return: Best move
+        :rtype: list[int, int, int]
+        """
         # Minimax algorithm
         if player == "max":
             nplayer = 1
@@ -170,7 +213,12 @@ class Game():
 
         return best
 
-    def bestMove(self):
+    def bestMove(self) -> tuple[int, int]:
+        """Gets the best move
+
+        :return: Best move
+        :rtype: tuple[int, int]
+        """
         depth = len(self.generateTree(self.game, "max"))
         if self.tree == None:
             best = self.minimax(self.game, depth, "max")
@@ -179,6 +227,6 @@ class Game():
         return best[0], best[1]
 
     def moveAI(self):
-        # Make a move based on the best move
+        """Makes the AI move based on the best move"""
         x, y = self.bestMove()
         self.move(1, x, y)

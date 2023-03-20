@@ -1,7 +1,11 @@
-from game import Game
 from graphviz import Digraph # For type used in plotTree
 
 class Node():
+    """Node class for the minimax tree
+
+    :param state: The current state of the game
+    :type state: Game
+    """
     def __init__(self, state):
         """Init variable, sets up colors and variables"""
         self.state = state
@@ -10,12 +14,11 @@ class Node():
         self.action = None
         self.value = 0
         self.color = "#FFFFFF"
-        __tempGame = Game('O')
-        if __tempGame.getWinner(state) == 1:
+        if self.getWinner(state) == 1:
             self.color = "#00AA00"
-        elif __tempGame.getWinner(state) == -1:
+        elif self.getWinner(state) == -1:
             self.color = "#AA0000"
-        elif __tempGame.getDraw(state):
+        elif self.getDraw(state):
             self.color = "#AAAAAA"
         else:
             self.color = "#EEEEEE"
@@ -48,6 +51,49 @@ class Node():
                     result += "X"
             result += "\n"
         return result
+    
+    # From game.py to avoid circular imports
+    def getWinner(self, game):
+        """Gets whoever has won
+
+        :param game: The current state of the game
+        :type game: Game
+        :return: Either 1, -1 or None, Depending on who won
+        :rtype: int or None
+        """
+        # Check row
+        rows = [sum(row) for row in game]
+        if 3 in rows:
+            return 1
+        elif -3 in rows:
+            return -1
+
+        cols = [sum(col) for col in zip(*game)]
+        if 3 in cols:
+            return 1
+        elif -3 in cols:
+            return -1
+
+        diags = [game[0][0] + game[1][1] + game[2]
+                 [2], game[0][2] + game[1][1] + game[2][0]]
+        if 3 in diags:
+            return 1
+        elif -3 in diags:
+            return -1
+
+    def getDraw(self, game) -> bool:
+        """Detects if a draw has happened
+
+        :param game: Current state of the game
+        :type game: Game
+        :return: True if there is a draw, False if there isnt
+        :rtype: bool
+        """
+        for row in game:
+            for cell in row:
+                if cell == 0:
+                    return False
+        return True
 
 
 def plotTree(node: Node, graph: Digraph) -> None:
