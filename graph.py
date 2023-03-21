@@ -15,7 +15,7 @@ class Node():
         self.value = None
         self.player = "max"
         self.color = "#FFFFFF"
-        self.edgeColor = "#222222"
+        self.edgeColor = "#222222", "2"
         if self.getWinner(state) == 1:
             self.color = "#00AA00"
         elif self.getWinner(state) == -1:
@@ -158,14 +158,14 @@ class Node():
         else:
             self.color = "#EEEEEE"
 
-    def edgeColor(self, position) -> str:
+    def bestMove(self, position) -> str:
         """Calculates the edge color
 
         :return: Edge color
         :rtype: str
         """
         if self.best == False:
-            return "#222222"
+            return "#222222", "2"
         if self.player == "max":
             best = [[(-1, -1), float("-inf")]]
 
@@ -177,7 +177,7 @@ class Node():
             for action in best:
                 action[2].best = True
                 if action[0] == position:
-                    return "#00AA00"
+                    return "#00AA00", "4"
         else:
             best = [[(-1, -1), float("+inf")]]
 
@@ -189,8 +189,8 @@ class Node():
             for action in best:#
                 action[2].best = True
                 if action[0] == position:
-                    return "#00AA00"
-        return "#222222"
+                    return "#00AA00", "4"
+        return "#222222", "2"
 
     def isLeaf(self) -> bool:
         """If the node has no children its a leaf
@@ -281,9 +281,11 @@ def plotTree(node: Node, graph: Digraph) -> None:
                    fillcolor=node.color)
         
         for child in node.children:
+            edgeColor, penWidth = node.bestMove(child.action)
             graph.edge(str(id(node)),
                        str(id(child)),
                        label=f'({child.action[0] + 1}, {child.action[1] + 1}) | {child.value}',
                        style='filled',
-                       color=node.edgeColor(child.action))
+                       penwidth=penWidth,
+                       color=edgeColor)
             plotTree(child, graph)
