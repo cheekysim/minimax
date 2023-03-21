@@ -220,14 +220,9 @@ class Game():
                 if score[2] == best[2]:
                     equal.append(score)
         if len(equal) > 1:
-            # Make the good path arrow show green later
             choice = random.choice(equal)
-            if tree:
-                node.fvalue = choice[2]
             return choice
         else:
-            if tree:
-                node.fvalue = choice[2]
             return best
 
     def bestMove(self) -> tuple[int, int]:
@@ -241,8 +236,6 @@ class Game():
             best = self.minimax(self.game, depth, "max")
         else:
             best = self.minimax(self.game, depth, "max", self.tree)
-            self.tree.fvalue = best[2]
-
         return best[0], best[1]
 
     def moveAI(self):

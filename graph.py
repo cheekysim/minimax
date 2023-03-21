@@ -12,8 +12,7 @@ class Node():
         self.formatted = self.format()
         self.children = []
         self.action = None
-        self.value = 0
-        self.fvalue = 0
+        self.value = None
         self.player = "max"
         self.color = "#FFFFFF"
         self.edgeColor = "#222222"
@@ -33,8 +32,6 @@ class Node():
         :rtype: bool
         """
         return len(self.children) == 0
-    
-
     
     def format(self) -> str:
         """Returns a string instead of a dictionary
@@ -111,7 +108,7 @@ def plotTree(node: Node, graph: Digraph) -> None:
         graph.node(str(id(node)), label=str(node.formatted), shape='circle', style='filled', fillcolor=node.color)
     else:
         graph.node(str(id(node)),
-                   label=f'{str(node.formatted)}{node.player} | {node.fvalue}',
+                   label=f'{str(node.formatted)}{node.player}',
                    shape='box',
                    style='filled',
                    fillcolor=node.color)
