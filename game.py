@@ -236,6 +236,7 @@ class Game():
             best = self.minimax(self.game, depth, "max")
         else:
             best = self.minimax(self.game, depth, "max", self.tree)
+
         return best[0], best[1]
 
     def moveAI(self):

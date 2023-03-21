@@ -84,6 +84,7 @@ def main(graphvis: bool = False):
             if fact <= 720:
                 root = Node(game.game) # This is used as the root node for the decision tree
                 root.player = "max"
+                root.best = True
                 game.tree = root # This makes the tree not Null so the code will add to it
             game.moveAI() # Moves the ai and generates the tree
             if fact <= 720:
