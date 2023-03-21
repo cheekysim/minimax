@@ -92,11 +92,20 @@ def main(graphvis: bool = False):
                 graph.attr(
                     'graph',
                     rankdir='TB',
-                    label=f'Decision Tree For {fact} Moves',
+                    label=f'Decision Tree For ~{fact} Moves',
                     labelloc='t',
                     labeljust='c',
-                    labelfontsize='80'
+                    labelfontsize='80',
+                    fontname='Monocraft, Lucida Sans Typewriter',
                     )
+                graph.attr(
+                    'node',
+                    fontname='Monocraft, Lucida Sans Typewriter',
+                )
+                graph.attr(
+                    'edge',
+                    fontname="Monocraft, Lucida Sans Typewriter"
+                )
                 # Function in graph.py
                 plotTree(root, graph)   
                 # Saves the graph
