@@ -185,16 +185,18 @@ class Game():
             score = self.evaluate(state, depth)
             return [-1, -1, score]
 
+        equal = []
         for cell in self.generateTree(state, player).items():
             x, y = cell[0]
             state[x][y] = nplayer
             if tree:
                 node = Node(state)
                 node.action = cell[0]
-                node.player = player
                 if player == "max":
+                    node.player = "min"
                     score = self.minimax(state, depth - 1, "min", node)
                 else:
+                    node.player = "max"
                     score = self.minimax(state, depth - 1, "max", node)
                 node.value = score[2]
                 tree.children.append(node)
@@ -205,23 +207,27 @@ class Game():
                     score = self.minimax(state, depth - 1, "max")
             state[x][y] = 0
             score[0], score[1] = x, y
-            equal = []
             if player == "max":
                 if score[2] > best[2]:
                     best = score
-                    equal.append(score)
+                    equal = [score]
                 if score[2] == best[2]:
                     equal.append(score)
             else:
                 if score[2] < best[2]:
                     best = score
-                    equal.append(score)
+                    equal = [score]
                 if score[2] == best[2]:
                     equal.append(score)
         if len(equal) > 1:
-            if depth == 8: print(equal)
-            return random.choice(equal)
+            # Make the good path arrow show green later
+            choice = random.choice(equal)
+            if tree:
+                node.fvalue = choice[2]
+            return choice
         else:
+            if tree:
+                node.fvalue = choice[2]
             return best
 
     def bestMove(self) -> tuple[int, int]:
@@ -235,6 +241,7 @@ class Game():
             best = self.minimax(self.game, depth, "max")
         else:
             best = self.minimax(self.game, depth, "max", self.tree)
+            self.tree.fvalue = best[2]
 
         return best[0], best[1]
 

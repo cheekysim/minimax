@@ -6,15 +6,17 @@ class Node():
     :param state: The current state of the game
     :type state: Game
     """
-    def __init__(self, state):
+    def __init__(self, state: dict):
         """Init variable, sets up colors and variables"""
         self.state = state
         self.formatted = self.format()
         self.children = []
         self.action = None
         self.value = 0
+        self.fvalue = 0
         self.player = "max"
         self.color = "#FFFFFF"
+        self.edgeColor = "#222222"
         if self.getWinner(state) == 1:
             self.color = "#00AA00"
         elif self.getWinner(state) == -1:
@@ -23,7 +25,6 @@ class Node():
             self.color = "#AAAAAA"
         else:
             self.color = "#EEEEEE"
-    
 
     def isLeaf(self) -> bool:
         """If the node has no children its a leaf
@@ -109,7 +110,16 @@ def plotTree(node: Node, graph: Digraph) -> None:
     if node.isLeaf():
         graph.node(str(id(node)), label=str(node.formatted), shape='circle', style='filled', fillcolor=node.color)
     else:
-        graph.node(str(id(node)), label=str(node.formatted), shape='box', style='filled', fillcolor=node.color)
+        graph.node(str(id(node)),
+                   label=f'{str(node.formatted)}{node.player} | {node.fvalue}',
+                   shape='box',
+                   style='filled',
+                   fillcolor=node.color)
+        
         for child in node.children:
             plotTree(child, graph)
-            graph.edge(str(id(node)), str(id(child)), label=f'({child.action[0] + 1}, {child.action[1] + 1}) | {child.value} | {child.player}')
+            graph.edge(str(id(node)),
+                       str(id(child)),
+                       label=f'({child.action[0] + 1}, {child.action[1] + 1}) | {child.value}',
+                       style='filled',
+                       color=node.edgeColor)
