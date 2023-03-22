@@ -158,38 +158,52 @@ class Node():
         else:
             self.color = "#EEEEEE"
 
-    def bestMove(self, position) -> str:
-        """Calculates the edge color
+    def bestMove(self, position: tuple[int, int]) -> str:
+        """Calculates the edge color and pen width based on the best move(s)
 
+        :param position: Position of the move
+        :type position: tuple
         :return: Edge color
         :rtype: str
         """
+        # Best is used to make one continuous line
+        # This avoids random green lines appearing on the opposite side of the graph
         if self.best == False:
             return "#222222", "2"
+        
+        # Find the best move(s) and return green and a thicker line
         if self.player == "max":
             best = [[(-1, -1), float("-inf")]]
 
             for child in self.children:
                 if child.value > best[0][1]:
                     best = [[child.action, child.value, child]]
+                # If there are multiple best moves, turn them all green
                 elif child.value == best[0][1]:
                     best.append([child.action, child.value, child])
+            # If the child is the best, turn it green
             for action in best:
                 action[2].best = True
                 if action[0] == position:
                     return "#00AA00", "4"
+                
+        # Uses min instead of max
         else:
             best = [[(-1, -1), float("+inf")]]
 
             for child in self.children:
                 if child.value < best[0][1]:
                     best = [[child.action, child.value, child]]
+                # If there are multiple best moves, turn them all green
                 elif child.value == best[0][1]:
                     best.append([child.action, child.value, child])
-            for action in best:#
+            # If the child is the best, turn it green
+            for action in best:
+                # Allows the green line to spread to the next iteration of children
                 action[2].best = True
                 if action[0] == position:
                     return "#00AA00", "4"
+        # If the child is not the best, turn it black
         return "#222222", "2"
 
     def isLeaf(self) -> bool:
